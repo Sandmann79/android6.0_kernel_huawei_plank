@@ -3,6 +3,7 @@
 These are the release notes for Linux version 3.  Read them carefully,
 as they tell you what this is all about, explain how to install the
 kernel, and what to do if something goes wrong. 
+
 -add test by ld
 
 WHAT IS LINUX?
