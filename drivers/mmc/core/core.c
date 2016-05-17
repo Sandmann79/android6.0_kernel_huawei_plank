@@ -454,8 +454,10 @@ EXPORT_SYMBOL(mmc_start_bkops);
 static void mmc_wait_data_done(struct mmc_request *mrq)
 {
 	spin_lock(&mrq->host->context_info.lock);
-	mrq->host->context_info.is_done_rcv = true;
-	wake_up_interruptible(&mrq->host->context_info.wait);
+	struct mmc_context_info *context_info = &mrq->host->context_info;
+
+	context_info->is_done_rcv = true;
+	wake_up_interruptible(&context_info->wait);
 	spin_unlock(&mrq->host->context_info.lock);
 }
 
@@ -2341,7 +2343,7 @@ static int mmc_do_erase(struct mmc_card *card, unsigned int from,
 				DSM_EMMC_LOG(card, DSM_EMMC_ERASE_ERR,
 					"%s:error %d requesting status %#x\n", __FUNCTION__,
 					err, cmd.resp[0]);
-			
+
 			}
 #endif
 
@@ -2736,7 +2738,7 @@ int _mmc_detect_card_removed(struct mmc_host *host)
 		{
 			dsm_sdcard_cmd_logs[i].value = 0;
 		}
-		
+
 	}
 #endif
 

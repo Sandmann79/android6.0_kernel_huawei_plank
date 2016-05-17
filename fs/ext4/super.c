@@ -462,9 +462,13 @@ static void ext4_handle_error(struct super_block *sb)
 
 	dump_ext4_sb_info(sb);
 
-	if (test_opt(sb, ERRORS_PANIC))
+	if (test_opt(sb, ERRORS_PANIC)) {
+		if (EXT4_SB(sb)->s_journal &&
+		  !(EXT4_SB(sb)->s_journal->j_flags & JBD2_REC_ERR))
+			return;
 		panic("EXT4-fs (device %s): panic forced after error\n",
 			sb->s_id);
+		}
 
 #ifdef CONFIG_FEATURE_HUAWEI_EMERGENCY_DATA
 	trigger_double_data(sb);
@@ -484,7 +488,7 @@ void __ext4_error(struct super_block *sb, const char *function,
 	       sb->s_id, function, line, current->comm, &vaf);
 #ifdef CONFIG_HUAWEI_FS_DSM
 	if(!dsm_client_ocuppy(fs_dclient))
-	 {	
+	 {
 	 	dsm_client_record(fs_dclient,"EXT4-fs error (device %s): %s:%d\n",sb->s_id, function, line);
 		dsm_client_notify(fs_dclient, DSM_FS_EXT4_ERROR);
 	 }
@@ -511,7 +515,7 @@ void ext4_error_inode(struct inode *inode, const char *function,
 	vaf.va = &args;
 #ifdef CONFIG_HUAWEI_FS_DSM
 	if(!dsm_client_ocuppy(fs_dclient))
-	 {	
+	 {
 	 	dsm_client_record(fs_dclient,"EXT4-fs error (device %s): %s:%d:inode #%lu\n",
                           inode->i_sb->s_id, function, line, inode->i_ino);
 		dsm_client_notify(fs_dclient, DSM_FS_EXT4_ERROR_INODE);
@@ -550,7 +554,7 @@ void ext4_error_file(struct file *file, const char *function,
 		path = "(unknown)";
 #ifdef CONFIG_HUAWEI_FS_DSM
 	if(!dsm_client_ocuppy(fs_dclient))
-	 {	
+	 {
 	 	dsm_client_record(fs_dclient,"EXT4-fs error (device %s): %s:%d:inode #%lu\n",
                           inode->i_sb->s_id, function, line, inode->i_ino);
 		dsm_client_notify(fs_dclient, DSM_FS_EXT4_ERROR_FILE);
@@ -668,8 +672,12 @@ void __ext4_abort(struct super_block *sb, const char *function,
 
 	dump_ext4_sb_info(sb);
 
-	if (test_opt(sb, ERRORS_PANIC))
+	if (test_opt(sb, ERRORS_PANIC)) {
+		if (EXT4_SB(sb)->s_journal &&
+		  !(EXT4_SB(sb)->s_journal->j_flags & JBD2_REC_ERR))
+			return;
 		panic("EXT4-fs panic from previous error\n");
+	}
 
 #ifdef CONFIG_FEATURE_HUAWEI_EMERGENCY_DATA
 	trigger_double_data(sb);
@@ -3423,12 +3431,12 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
 	if (!(bh = sb_bread(sb, logical_sb_block))) {
 #ifdef CONFIG_HUAWEI_FS_DSM
 	    if(!dsm_client_ocuppy(fs_dclient))
-	    {	
+	    {
 	 	   dsm_client_record(fs_dclient,"EXT4-fs(%s):unable to read superblock\n",sb->s_id);
 		   dsm_client_notify(fs_dclient, DSM_FS_EXT4_ERROR_READ_SUPER);
 	    }
 #endif
-	
+
 		ext4_msg(sb, KERN_ERR, "unable to read superblock");
 		goto out_fail;
 	}
@@ -3633,7 +3641,7 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
 		if (!bh) {
              #ifdef CONFIG_HUAWEI_FS_DSM
 	         if(!dsm_client_ocuppy(fs_dclient))
-	         {	
+	         {
 	 	         dsm_client_record(fs_dclient,"EXT4-fs(%s):Can't read superblock on 2nd try\n",sb->s_id);
 		         dsm_client_notify(fs_dclient, DSM_FS_EXT4_ERROR_READ_SUPER_SECOND);
 	         }
@@ -4551,13 +4559,13 @@ static int ext4_commit_super(struct super_block *sb, int sync)
 		if (error) {
 #ifdef CONFIG_HUAWEI_FS_DSM
 	       if(!dsm_client_ocuppy(fs_dclient))
-	       {	
+	       {
 	 	      dsm_client_record(fs_dclient,"EXT4-fs(%s):I/O error while writing superblock\n",sb->s_id);
 		      dsm_client_notify(fs_dclient, DSM_FS_EXT4_ERROR_WRITE_SUPER);
 	       }
 #endif
-			
-		
+
+
 			ext4_msg(sb, KERN_ERR, "I/O error while writing "
 			       "superblock");
 			clear_buffer_write_io_error(sbh);
@@ -5525,7 +5533,7 @@ static int __init ext4_init_fs(void)
 	  fs_dclient = dsm_register_client(&dsm_fs);
 	}
 #endif
-	
+
 	return 0;
 out:
 	unregister_as_ext2();
