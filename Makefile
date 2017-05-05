@@ -1,6 +1,6 @@
 VERSION = 3
 PATCHLEVEL = 10
-SUBLEVEL = 101
+SUBLEVEL = 105
 EXTRAVERSION =
 NAME = TOSSUG Baby Fish
 
@@ -376,7 +376,7 @@ endif
 
 KBUILD_CPPFLAGS := -D__KERNEL__
 
-KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+KBUILD_CFLAGS   := -w -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -Wimplicit-function-declaration \
 		   -Wno-format-security \
@@ -424,7 +424,7 @@ KBUILD_CPPFLAGS += -DDRV_BUILD_SEPARATE
 endif
 OBB_PRODUCT_NAME = hi3635_udp
 ifneq ($(findstring hi3635, $(OBB_PRODUCT_NAME) ),)
-BALONG_TOPDIR = $(CURDIR)/../kernel/drivers/vendor/hisi
+BALONG_TOPDIR = $(srctree)/drivers/vendor/hisi
 OBB_PRODUCT_NAME = hi3635_udp
 CFG_PLATFORM = hi3630
 TARGET_ARM_TYPE = arm64
