@@ -18,6 +18,10 @@
 #include <linux/hisi/hw_cmdline_parse.h>
 #include <huawei_platform/log/log_jank.h>
 
+#ifdef CONFIG_POWERSUSPEND
+#include <linux/powersuspend.h>
+#endif
+
 #define DTS_COMP_JDI_NT35695 "hisilicon,mipi_jdi_NT35695"
 #define LCD_VDDIO_TYPE_NAME	"lcd-vddio-type"
 #define PLK_RF_REG_FLAG		"rf-workaround-flag"
@@ -3985,6 +3989,10 @@ static int mipi_jdi_panel_on(struct platform_device *pdev)
 
 	HISI_FB_INFO("fb%d, -!\n", hisifd->index);
 
+#ifdef CONFIG_POWERSUSPEND
+	set_power_suspend_state_panel_hook(POWER_SUSPEND_INACTIVE);
+#endif
+
 	return 0;
 }
 
@@ -4046,6 +4054,10 @@ static int mipi_jdi_panel_off(struct platform_device *pdev)
 	checksum_enable_ctl = false;
 
 	HISI_FB_INFO("fb%d, -!\n", hisifd->index);
+
+#ifdef CONFIG_POWERSUSPEND
+	set_power_suspend_state_panel_hook(POWER_SUSPEND_ACTIVE);
+#endif
 
 	return 0;
 }
