@@ -273,6 +273,7 @@ static bool intel_crt_detect_ddc(struct drm_connector *connector)
 {
 	struct intel_crt *crt = intel_attached_crt(connector);
 	struct drm_i915_private *dev_priv = crt->base.base.dev->dev_private;
+	bool ret = false;
 
 	/* CRT should always be at 0, but check anyway */
 	if (crt->base.type != INTEL_OUTPUT_ANALOG)
@@ -299,13 +300,13 @@ static bool intel_crt_detect_ddc(struct drm_connector *connector)
 
 		if (!is_digital) {
 			DRM_DEBUG_KMS("CRT detected via DDC:0x50 [EDID]\n");
-			return true;
+			ret = true;
 		} else {
 			DRM_DEBUG_KMS("CRT not detected via DDC:0x50 [EDID reports a digital panel]\n");
 		}
 	}
 
-	return false;
+	return ret;
 }
 
 static enum drm_connector_status
